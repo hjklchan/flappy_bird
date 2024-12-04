@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::component::MainCamera;
+use crate::components::MainCamera;
 
 pub fn plugin(app: &mut App) {
     app.add_plugins(CameraPlugin);
