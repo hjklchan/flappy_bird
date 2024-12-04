@@ -1,6 +1,5 @@
+use crate::{components::OnMainMenuScreen, states::GameState, Heroes};
 use bevy::prelude::*;
-
-use crate::{components::OnMainMenuScreen, states::GameState};
 
 pub fn plugin(app: &mut App) {
     app.add_plugins(MenuPlugin);
@@ -31,7 +30,6 @@ enum MenuState {
 
 #[derive(Component)]
 enum MenuButtonAction {
-    Play,
     SelectHero,
     Quit,
 }
@@ -87,21 +85,51 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
 
                     // Display the hero selection
                     parent
-                        .spawn((
-                            Node {
-                                width: Val::Percent(100.0),
-                                height: Val::Px(100.0),
-                                // border: UiRect::all(Val::Px(2.0)),
-                                ..default()
-                            },
-                            BorderColor(Color::WHITE),
-                        ))
+                        .spawn(Node {
+                            justify_content: JustifyContent::SpaceAround,
+                            ..default()
+                        })
                         .with_children(|parent| {
-                            // Hero list
-                            parent.spawn(ImageNode {
-                                image: asset_server.load("texture/heros/hz.png"),
-                                ..default()
-                            });
+                            parent
+                                .spawn((
+                                    Node {
+                                        width: Val::Percent(100.0),
+                                        height: Val::Px(100.0),
+                                        // border: UiRect::all(Val::Px(2.0)),
+                                        ..default()
+                                    },
+                                    BorderColor(Color::WHITE),
+                                ))
+                                .with_children(|parent| {
+                                    // Hero list
+                                    parent.spawn((
+                                        ImageNode {
+                                            image: asset_server.load("texture/heroes/hz.png"),
+                                            ..default()
+                                        },
+                                        Node {
+                                            margin: UiRect::all(Val::Px(5.0)),
+                                            ..default()
+                                        },
+                                        MenuButtonAction::SelectHero,
+                                        Heroes::HuangZhao,
+                                        Button,
+                                    ));
+
+                                    parent.spawn((
+                                        ImageNode {
+                                            image: asset_server.load("texture/heroes/xmy.png"),
+                                            ..default()
+                                        },
+                                        Node {
+                                            margin: UiRect::all(Val::Px(5.0)),
+                                            ..default()
+                                        },
+                                        MenuButtonAction::SelectHero,
+                                        Heroes::XiaoMingYan,
+                                        Button,
+                                    ));
+                                });
                         });
 
                     // Display the starting game text
@@ -114,4 +142,19 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     // TODO - Display Quit button
                 });
         });
+}
+
+fn menu_action(
+    interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>)>,
+) {
+    for (interaction, action) in interaction_query.iter() {
+        if *interaction == Interaction::Pressed {
+            match action {
+                MenuButtonAction::SelectHero => {
+
+                },
+                MenuButtonAction::Quit => break,
+            }
+        }
+    }
 }
