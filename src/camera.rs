@@ -15,11 +15,5 @@ impl Plugin for CameraPlugin {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn((
-        Camera2dBundle {
-            transform: Transform::ZERO,
-            ..default()
-        },
-        MainCamera,
-    ));
+    commands.spawn((Camera2d, MainCamera));
 }
