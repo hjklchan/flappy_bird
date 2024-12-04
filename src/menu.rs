@@ -61,7 +61,7 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    BackgroundColor(Color::srgb_u8(0, 200, 0)),
+                    // BackgroundColor(Color::srgb_u8(0, 200, 0)),
                 ))
                 .with_children(|parent| {
                     // Display the game name
