@@ -1,2 +1,3 @@
-pub mod component;
+pub mod components;
+pub mod states;
 pub mod camera;
