@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use flappy_bird::{camera, menu, states::GameState};
+use flappy_bird::{camera, menu, game, states::GameState};
 
 fn main() {
     App::new()
@@ -7,5 +7,6 @@ fn main() {
         .add_plugins(camera::plugin)
         .init_state::<GameState>()
         .add_plugins(menu::plugin)
+        .add_plugins(game::plugin)
         .run();
 }
