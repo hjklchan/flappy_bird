@@ -1,4 +1,4 @@
-use crate::{components::OnMainMenuScreen, states::GameState, Heroes};
+use crate::{common::despawn_screen, components::OnMainMenuScreen, states::GameState, Game, Hero, Heroes};
 use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
@@ -14,15 +14,26 @@ impl Plugin for MenuPlugin {
         // When entering the [`GameState::Menu`] state,
         // switch the state to [`MenuState::Main`] instead of [`MenuState::Closed`]
         app.add_systems(OnEnter(GameState::Menu), setup_menu);
+        app.add_systems(OnExit(GameState::Menu), despawn_screen::<OnMainMenuScreen>);
 
         // Enter main menu
         app.add_systems(OnEnter(MenuState::Main), setup_main_menu);
+
+        // Update the state when the menu is clicked
+        app.add_systems(Update, menu_action.run_if(in_state(GameState::Menu)));
+
+        // Enter the selecting hero
+        app.add_systems(
+            Update,
+            select_hero_action.run_if(in_state(MenuState::SelectHero)),
+        );
     }
 }
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 enum MenuState {
     Main,
+    SelectHero, // If the hero is clicked
     Settings,
     #[default]
     Closed,
@@ -66,7 +77,7 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     parent.spawn((
                         Text::new("Rust Flappy Bird"),
                         TextFont {
-                            font_size: 56.0,
+                            font_size: 40.0,
                             ..default()
                         },
                         TextColor(Color::srgb_u8(250, 0, 0)),
@@ -144,16 +155,51 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
+#[allow(clippy::type_complexity)]
 fn menu_action(
-    interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>)>,
+    interaction_query: Query<
+        (&Interaction, &MenuButtonAction),
+        (Changed<Interaction>, With<Button>),
+    >,
+    mut next_menu_state: ResMut<NextState<MenuState>>,
 ) {
     for (interaction, action) in interaction_query.iter() {
         if *interaction == Interaction::Pressed {
             match action {
                 MenuButtonAction::SelectHero => {
-
-                },
+                    next_menu_state.set(MenuState::SelectHero);
+                }
                 MenuButtonAction::Quit => break,
+            }
+        }
+    }
+}
+
+#[allow(clippy::type_complexity)]
+fn select_hero_action(
+    interaction_query: Query<(&Interaction, &Heroes), (Changed<Interaction>, With<Button>)>,
+    mut game: ResMut<Game>,
+) {
+    for (interaction, hero) in interaction_query.iter() {
+        if *interaction == Interaction::Pressed {
+            dbg!("Select Hero");
+            match hero {
+                Heroes::HuangZhao => {
+                    dbg!("Select HuangZhao");
+                    game.selected_hero = Some(Hero {
+                        key: "hz",
+                        name: "HuangZhao",
+                        image: "hz.png",
+                    })
+                }
+                Heroes::XiaoMingYan => {
+                    dbg!("Select XiaoMingYan");
+                    game.selected_hero = Some(Hero {
+                        key: "xmy",
+                        name: "XiaoMingYan",
+                        image: "xmy.png",
+                    })
+                }
             }
         }
     }
