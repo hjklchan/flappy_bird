@@ -6,6 +6,7 @@ pub mod states;
 pub mod menu;
 pub mod camera;
 pub mod game;
+pub mod hud;
 
 use bevy::prelude::{Component, Resource};
 
