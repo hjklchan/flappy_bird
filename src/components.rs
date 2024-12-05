@@ -33,4 +33,9 @@ impl Score {
 }
 
 #[derive(Component)]
+pub struct Velocity {
+    pub value: Vec3,
+}
+
+#[derive(Component)]
 pub struct OnMainMenuScreen;
