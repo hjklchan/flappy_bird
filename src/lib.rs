@@ -7,22 +7,14 @@ pub mod menu;
 pub mod camera;
 pub mod game;
 pub mod hud;
+pub mod bird;
 
 use bevy::prelude::{Component, Resource};
 
-#[derive(Resource)]
+#[derive(Resource, Default)]
 pub struct Game {
     selected_hero: Option<Hero>,
     score: u32,
-}
-
-impl Default for Game {
-    fn default() -> Self {
-        Self {
-            selected_hero: None,
-            score: 0,
-        }
-    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
