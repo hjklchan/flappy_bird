@@ -10,7 +10,7 @@ struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(FixedUpdate, press_key_to_start_game.run_if(is_select_hero));
+        app.add_systems(Update, press_key_to_start_game.run_if(is_select_hero));
     }
 }
 
