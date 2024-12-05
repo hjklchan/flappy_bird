@@ -7,3 +7,10 @@ pub enum GameState {
     Menu,
     InGame,
 }
+
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum Pause {
+    #[default]
+    Running,
+    Stop,
+}
