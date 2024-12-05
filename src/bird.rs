@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::Bird,
+    components::{Bird, Velocity},
     states::{GameState, PlayingState},
     // Game as GameResource,
 };
@@ -17,8 +17,17 @@ impl Plugin for BirdPlugin {
         app.init_resource::<CountDownTimer>();
         app.init_resource::<FlyingAnimationTimer>();
         app.add_systems(OnEnter(GameState::InGame), spawn_bird);
-        app.add_systems(Update, spawn_count_down.run_if(in_state(GameState::InGame)));
+        app.add_systems(
+            Update,
+            spawn_count_down
+                .run_if(in_state(GameState::InGame))
+                .run_if(in_state(PlayingState::Ready)),
+        );
         app.add_systems(Update, bird_animation);
+        app.add_systems(
+            Update,
+            (bird_jumping, bird_gravity).run_if(in_state(PlayingState::Start)),
+        );
     }
 }
 
@@ -51,6 +60,7 @@ fn spawn_bird(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    mut next_playing_state: ResMut<NextState<PlayingState>>,
     // game: Res<GameResource>,
 ) {
     // Origin sheet w/h: 102 * 24
@@ -76,8 +86,13 @@ fn spawn_bird(
             step: 1,
         },
         Transform::from_xyz(0.0, 0.0, 2.0),
+        Velocity {
+            value: Vec3::Z * 400.0,
+        },
         Bird,
     ));
+
+    next_playing_state.set(PlayingState::Ready);
 }
 
 fn spawn_count_down(
@@ -88,7 +103,7 @@ fn spawn_count_down(
     count_down_timer.0.tick(time.delta());
 
     if count_down_timer.0.finished() {
-        next_start_game_state.set(PlayingState::Ready);
+        next_start_game_state.set(PlayingState::Start);
     }
 }
 
@@ -101,7 +116,7 @@ fn bird_animation(
         let delta = time.delta();
 
         flying_animation_timer.0.tick(delta);
-        
+
         if flying_animation_timer.0.finished() {
             if let Some(atlas) = &mut sprite.texture_atlas {
                 atlas.index = if atlas.index == animation_indices.last {
@@ -111,5 +126,30 @@ fn bird_animation(
                 };
             }
         }
+    }
+}
+
+fn bird_jumping(
+    mut query: Query<&mut Velocity, With<Bird>>,
+    button_input: Res<ButtonInput<KeyCode>>,
+) {
+    if let Ok(mut velocity) = query.get_single_mut() {
+        // Jump
+        if button_input.just_pressed(KeyCode::Space) {
+            velocity.value.y = 400.0;
+        }
+    }
+}
+
+fn bird_gravity(mut query: Query<(&mut Transform, &mut Velocity), With<Bird>>, time: Res<Time>) {
+    const G: f32 = 9.8;
+
+    if let Ok((mut transform, mut velocity)) = query.get_single_mut() {
+        let delta = time.delta_secs();
+        let speed = 150.0;
+        let delta_velocity = speed * G * delta;
+
+        velocity.value.y -= delta_velocity;
+        transform.translation.y += velocity.value.y * delta;
     }
 }
