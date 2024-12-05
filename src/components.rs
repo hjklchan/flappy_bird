@@ -13,7 +13,10 @@ pub struct Ground;
 pub struct Bird;
 
 #[derive(Component)]
-pub struct Pipe;
+pub struct UpperPipe;
+
+#[derive(Component)]
+pub struct BottomPipe;
 
 #[derive(Component)]
 pub enum Score {
