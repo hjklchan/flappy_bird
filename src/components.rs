@@ -7,6 +7,9 @@ pub struct MainCamera;
 pub struct Background;
 
 #[derive(Component)]
+pub struct Ground;
+
+#[derive(Component)]
 pub enum Score {
     Digit,     // 1
     Tenth,     // 1x

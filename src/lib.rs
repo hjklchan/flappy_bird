@@ -8,6 +8,7 @@ pub mod camera;
 pub mod game;
 pub mod hud;
 pub mod bird;
+pub mod ground;
 
 use bevy::prelude::{Component, Resource};
 
