@@ -10,6 +10,9 @@ pub struct Background;
 pub struct Ground;
 
 #[derive(Component)]
+pub struct Bird;
+
+#[derive(Component)]
 pub enum Score {
     Digit,     // 1
     Tenth,     // 1x
