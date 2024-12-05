@@ -9,6 +9,14 @@ pub enum GameState {
 }
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum PlayingState {
+    #[default]
+    Ready,
+    Start,
+    GameOver,
+}
+
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum Pause {
     #[default]
     Running,
