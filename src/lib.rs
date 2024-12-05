@@ -7,7 +7,7 @@ pub mod menu;
 pub mod camera;
 pub mod game;
 
-use bevy::prelude::{Bundle, Component, Resource};
+use bevy::prelude::{Component, Resource};
 
 #[derive(Resource)]
 pub struct Game {
@@ -24,7 +24,7 @@ impl Default for Game {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct Hero {
     pub key: &'static str,
     pub name: &'static str,
