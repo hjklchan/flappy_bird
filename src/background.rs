@@ -27,6 +27,10 @@ fn spawn_background(mut commands: Commands, asset_server: Res<AssetServer>) {
             custom_size: Some(Vec2::new(WINDOW_WIDTH + 288.0 * 2.0, WINDOW_HEIGHT)),
             ..default()
         },
+        Transform {
+            translation: Vec3::ZERO,
+            ..default()
+        },
         Background,
     ));
 }
