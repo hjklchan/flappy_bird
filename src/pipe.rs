@@ -1,9 +1,10 @@
 use bevy::prelude::*;
-
+use rand::Rng;
 use crate::{
-    components::Pipe,
     states::{GameState, PlayingState},
 };
+use crate::components::{BottomPipe, UpperPipe};
+use crate::constants::{PIPE_HALF_HEIGHT, WINDOW_WIDTH};
 
 pub fn plugin(app: &mut App) {
     app.add_plugins(PipePlugin);
@@ -42,22 +43,65 @@ fn spawn_pipe(
     mut spawn_timer: ResMut<SpawnTimer>,
 ) {
     let sprite_handle = asset_server.load("texture/pipe.png");
+    let rng = rand::thread_rng();
 
     spawn_timer.0.tick(time.delta());
 
     // Spawn an entity every second
     if spawn_timer.0.finished() {
-        dbg!("Will spawn a new pipe");
+        let x = WINDOW_WIDTH / 2.0 + -30.0;
+        let mut rng = rand::thread_rng();
+
+        let mut rand_y = || {
+            let min_y = -200.0 - PIPE_HALF_HEIGHT + 20.0;
+            let max_y = -200.0 + PIPE_HALF_HEIGHT - 20.0;
+            let bottom_y = rng.gen_range(min_y..max_y);
+            (bottom_y, bottom_y + 420.0)
+        };
+
+        let (bottom_y, upper_y) = rand_y();
+
+        // Spawn upper pipe
         commands.spawn((
             Sprite {
                 image: sprite_handle.clone(),
                 ..default()
             },
             Transform {
-                translation: Vec3::new(0.0, 0.0, 0.5),
+                translation: Vec3::new(x, upper_y, 0.5),
                 ..default()
             },
-            Pipe,
+            UpperPipe,
         ));
+
+        // Spawn bottom pipe
+        commands.spawn((
+            Sprite {
+                image: sprite_handle.clone(),
+                ..default()
+            },
+            Transform {
+                translation: Vec3::new(x, bottom_y, 0.5),
+                ..default()
+            },
+            BottomPipe,
+        ));
+    }
+}
+
+fn pipe_moving(
+    mut upper_pipe_query: Query<&mut Transform, With<UpperPipe>>,
+    mut bottom_pipe_query: Query<&mut Transform, (With<BottomPipe>, Without<UpperPipe>)>,
+    time: Res<Time>,
+) {
+    let speed = 30.0;
+    let delta = time.delta_secs();
+
+    for mut transform in bottom_pipe_query.iter_mut() {
+        // TODO
+    }
+
+    for mut transform in upper_pipe_query.iter_mut() {
+        // TODO
     }
 }
