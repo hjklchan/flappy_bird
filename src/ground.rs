@@ -22,7 +22,7 @@ fn spawn_ground(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Sprite {
             image: asset_server.load("texture/base.png"),
-            custom_size: Some(Vec2::new(WINDOW_WIDTH + 112.0 * 2.0, 112.0)),
+            custom_size: Some(Vec2::new(WINDOW_WIDTH, 112.0)),
             image_mode: SpriteImageMode::Tiled {
                 tile_x: true,
                 tile_y: false,
