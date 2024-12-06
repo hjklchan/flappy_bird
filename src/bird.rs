@@ -1,9 +1,10 @@
-use bevy::prelude::*;
+use bevy::{ecs::query, prelude::*, transform};
 
 use crate::{
     common::condition_pro,
     components::{Bird, BottomPipe, UpperPipe, Velocity},
     constants::{GROUND_HALF_HEIGHT, PIPE_HALF_HEIGHT, PIPE_HALF_WIDTH, WINDOW_HEIGHT},
+    events::score,
     states::{GameState, PlayingState},
 };
 
@@ -43,6 +44,8 @@ impl Plugin for BirdPlugin {
                 // Change to [`PlayingState::GameOver`] if the Bird hits the Pipe
                 // This system will not running if it in [`PlayingState::GameOver`]
                 bird_hits_pipe,
+                
+                bird_cross_pipe,
             )
                 .run_if(in_state(PlayingState::Start)),
         );
@@ -54,7 +57,7 @@ struct CountDownTimer(Timer);
 
 impl Default for CountDownTimer {
     fn default() -> Self {
-        Self(Timer::from_seconds(3.0, TimerMode::Once))
+        Self(Timer::from_seconds(1.0, TimerMode::Once))
     }
 }
 
@@ -243,6 +246,26 @@ fn bird_hits_pipe(
     for bottom_pipe_transform in &bottom_pipe_q {
         if is_collision(bird_transform, bottom_pipe_transform) {
             game_over_workflows();
+        }
+    }
+}
+
+fn bird_cross_pipe(
+    mut score_evt: EventWriter<score::Add>,
+    bird_query: Query<&Transform, With<Bird>>,
+    mut any_pipe: Query<(&Transform, &mut BottomPipe), With<BottomPipe>>,
+) {
+    const BIRD_WIDTH: f32 = 34.0;
+    let bird_transform = bird_query.single();
+
+    // FIXME - How can I record the score after going through the (Any)Pipe?
+    for (pipe_transform, mut pipe) in &mut any_pipe {
+        let bird_x = bird_transform.translation.x - BIRD_WIDTH / 2.0;
+        let pipe_x = pipe_transform.translation.x + PIPE_HALF_WIDTH;
+
+        if bird_x > pipe_x {
+            pipe.passed = true;
+            score_evt.send(score::Add { step: 1 });
         }
     }
 }
