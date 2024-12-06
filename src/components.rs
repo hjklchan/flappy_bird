@@ -45,3 +45,6 @@ pub struct Velocity {
 
 #[derive(Component)]
 pub struct OnMainMenuScreen;
+
+#[derive(Component)]
+pub struct DevLogLayout;

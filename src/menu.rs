@@ -1,4 +1,4 @@
-use crate::{common::despawn_screen, components::OnMainMenuScreen, states::GameState, Game, Hero, Heroes};
+use crate::{common::despawn_screen, components::{DevLogLayout, OnMainMenuScreen}, states::GameState, Game, Hero, Heroes};
 use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
@@ -18,6 +18,9 @@ impl Plugin for MenuPlugin {
 
         // Enter main menu
         app.add_systems(OnEnter(MenuState::Main), setup_main_menu);
+
+        app.add_systems(OnEnter(MenuState::Main), setup_dev_log);
+        app.add_systems(OnExit(MenuState::Main), despawn_screen::<DevLogLayout>);
 
         // Update the state when the menu is clicked
         app.add_systems(Update, menu_action.run_if(in_state(GameState::Menu)));
@@ -47,6 +50,31 @@ enum MenuButtonAction {
 
 fn setup_menu(mut next_menu_state: ResMut<NextState<MenuState>>) {
     next_menu_state.set(MenuState::Main);
+}
+
+fn setup_dev_log(mut commands: Commands) {
+    commands
+        .spawn((
+            Node {
+                width: Val::Px(200.0),
+                height: Val::Px(120.0),
+                position_type: PositionType::Absolute,
+                right: Val::Px(10.0),
+                bottom: Val::Px(10.0),
+                // TODO
+                ..default()
+            },
+            ZIndex(99),
+            BackgroundColor(Color::srgb_u8(0, 0, 0)),
+            DevLogLayout,
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                Text::new("Development Log(s)"),
+                TextColor(Color::srgb_u8(250, 0, 0)),
+                TextFont::from_font_size(17.0),
+            ));
+        });
 }
 
 fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -146,7 +174,7 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     // Display the starting game text
                     parent.spawn((
                         Text::new("Press <space> to start the game"),
-                        TextFont::from_font_size(21.0),
+                        TextFont::from_font_size(16.0),
                         TextColor::WHITE,
                     ));
 
