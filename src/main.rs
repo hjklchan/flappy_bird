@@ -1,7 +1,6 @@
 use bevy::prelude::*;
-use bevy::text::TextPlugin;
 use flappy_bird::constants::{WINDOW_HEIGHT, WINDOW_WIDTH};
-use flappy_bird::{background, camera, game, menu, pipe, states::{GameState, PlayingState}, Game};
+use flappy_bird::{background, camera, game, menu, pipe, ui, states::{GameState, PlayingState}, Game};
 use flappy_bird::{bird, ground, hud};
 
 fn main() {
@@ -26,5 +25,6 @@ fn main() {
         .add_plugins(hud::plugin)
         .add_plugins(bird::plugin)
         .add_plugins(pipe::plugin)
+        .add_plugins(ui::plugin)
         .run();
 }
