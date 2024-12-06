@@ -11,13 +11,14 @@ pub mod bird;
 pub mod ground;
 pub mod pipe;
 pub mod ui;
+pub mod events;
 
 use bevy::prelude::{Component, Resource};
 
 #[derive(Resource, Default)]
 pub struct Game {
     selected_hero: Option<Hero>,
-    score: u32,
+    score: usize,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

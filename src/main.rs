@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use flappy_bird::constants::{WINDOW_HEIGHT, WINDOW_WIDTH};
+use flappy_bird::events::score;
 use flappy_bird::{background, camera, game, menu, pipe, ui, states::{GameState, PlayingState}, Game};
 use flappy_bird::{bird, ground, hud};
 
@@ -18,6 +19,7 @@ fn main() {
         .init_resource::<Game>()
         .init_state::<GameState>()
         .init_state::<PlayingState>()
+        .add_event::<score::Add>()
         .add_plugins(menu::plugin)
         .add_plugins(game::plugin)
         .add_plugins(background::plugin)
