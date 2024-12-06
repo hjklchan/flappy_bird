@@ -1,10 +1,10 @@
-use bevy::prelude::*;
-use rand::Rng;
-use crate::{
-    states::{GameState, PlayingState},
-};
+use std::f32::consts::PI;
+
 use crate::components::{BottomPipe, UpperPipe};
 use crate::constants::{PIPE_HALF_HEIGHT, WINDOW_WIDTH};
+use crate::states::{GameState, PlayingState};
+use bevy::prelude::*;
+use rand::Rng;
 
 pub fn plugin(app: &mut App) {
     app.add_plugins(PipePlugin);
@@ -17,7 +17,7 @@ impl Plugin for PipePlugin {
         app.init_resource::<SpawnTimer>();
         app.add_systems(
             Update,
-            spawn_pipe
+            (spawn_pipe, pipe_moving, despawn_if_out_of_bound)
                 .run_if(in_state(GameState::InGame))
                 .run_if(in_state(PlayingState::Start)),
         );
@@ -29,7 +29,7 @@ struct SpawnTimer(Timer);
 
 impl Default for SpawnTimer {
     fn default() -> Self {
-        Self(Timer::from_seconds(1.2, TimerMode::Repeating))
+        Self(Timer::from_seconds(1.8, TimerMode::Repeating))
     }
 }
 
@@ -43,14 +43,14 @@ fn spawn_pipe(
     mut spawn_timer: ResMut<SpawnTimer>,
 ) {
     let sprite_handle = asset_server.load("texture/pipe.png");
-    let rng = rand::thread_rng();
+    let mut rng = rand::thread_rng();
 
     spawn_timer.0.tick(time.delta());
 
     // Spawn an entity every second
     if spawn_timer.0.finished() {
         let x = WINDOW_WIDTH / 2.0 + -30.0;
-        let mut rng = rand::thread_rng();
+        // let mut rng = rand::thread_rng();
 
         let mut rand_y = || {
             let min_y = -200.0 - PIPE_HALF_HEIGHT + 20.0;
@@ -69,6 +69,7 @@ fn spawn_pipe(
             },
             Transform {
                 translation: Vec3::new(x, upper_y, 0.5),
+                rotation: Quat::from_rotation_z(PI),
                 ..default()
             },
             UpperPipe,
@@ -94,14 +95,35 @@ fn pipe_moving(
     mut bottom_pipe_query: Query<&mut Transform, (With<BottomPipe>, Without<UpperPipe>)>,
     time: Res<Time>,
 ) {
-    let speed = 30.0;
+    let speed = 110.0;
     let delta = time.delta_secs();
 
     for mut transform in bottom_pipe_query.iter_mut() {
-        // TODO
+        transform.translation.x -= speed * delta;
     }
 
     for mut transform in upper_pipe_query.iter_mut() {
-        // TODO
+        transform.translation.x -= speed * delta;
+    }
+}
+
+#[allow(clippy::type_complexity)]
+fn despawn_if_out_of_bound(
+    mut commands: Commands,
+    bottom_pipe_query: Query<(Entity, &Transform), With<BottomPipe>>,
+    upper_pipe_query: Query<(Entity, &Transform), (With<UpperPipe>, Without<BottomPipe>)>,
+) {
+    let expect_x = -(WINDOW_WIDTH / 2.0);
+
+    for (entity, transform) in bottom_pipe_query.iter() {
+        if transform.translation.x < expect_x {
+            commands.entity(entity).despawn();
+        }
+    }
+
+    for (entity, transform) in upper_pipe_query.iter() {
+        if transform.translation.x < expect_x {
+            commands.entity(entity).despawn();
+        }
     }
 }
