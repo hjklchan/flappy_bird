@@ -16,7 +16,7 @@ pub mod condition_pro {
     /// ### For example:
     /// 
     /// ```rust
-    /// // !in_state(PlayingState::GameOver)
+    /// // like: !in_state(PlayingState::GameOver)
     /// some_system.run_if(not_in_state(PlayingState::GameOver));
     /// ```
     pub fn not_in_state<S: States>(state: S) -> impl FnMut(Option<Res<State<S>>>) -> bool + Clone {
