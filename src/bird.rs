@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{Bird, Velocity},
-    constants::{GROUND_HALF_HEIGHT, WINDOW_HEIGHT},
+    common::condition_pro,
+    components::{Bird, BottomPipe, UpperPipe, Velocity},
+    constants::{GROUND_HALF_HEIGHT, PIPE_HALF_HEIGHT, PIPE_HALF_WIDTH, WINDOW_HEIGHT},
     states::{GameState, PlayingState},
 };
 
@@ -23,7 +24,12 @@ impl Plugin for BirdPlugin {
                 .run_if(in_state(GameState::InGame))
                 .run_if(in_state(PlayingState::Ready)),
         );
-        app.add_systems(Update, bird_animation);
+
+        app.add_systems(
+            Update,
+            bird_animation.run_if(condition_pro::not_in_state(PlayingState::GameOver)),
+        );
+
         app.add_systems(
             Update,
             (
@@ -32,6 +38,9 @@ impl Plugin for BirdPlugin {
                 // Change to [`PlayingState::GameOver`] if the Bird hits the Ground
                 // This system will not running if it in [`PlayingState::GameOver`]
                 bird_hits_ground,
+                // Change to [`PlayingState::GameOver`] if the Bird hits the Pipe
+                // This system will not running if it in [`PlayingState::GameOver`]
+                bird_hits_pipe,
             )
                 .run_if(in_state(PlayingState::Start)),
         );
@@ -165,6 +174,7 @@ fn bird_hits_ground(
     mut bird_query: Query<(&mut Transform, &mut Velocity), With<Bird>>,
     mut next_playing_state: ResMut<NextState<PlayingState>>,
 ) {
+    // TODO - BIRD_HEIGHT is not fixed length
     const BIRD_HEIGHT: f32 = 24.0;
     let (mut bird_transform, mut bird_velocity) = bird_query.single_mut();
 
@@ -177,5 +187,60 @@ fn bird_hits_ground(
 
         // Change the state to [`PlayingState::GameOver`]
         next_playing_state.set(PlayingState::GameOver);
+    }
+}
+
+#[allow(clippy::type_complexity)]
+fn bird_hits_pipe(
+    mut bird_query: Query<(&Transform, &mut Velocity), With<Bird>>,
+    upper_pipe_q: Query<&Transform, (With<UpperPipe>, Without<Bird>)>,
+    bottom_pipe_q: Query<&Transform, (With<BottomPipe>, Without<UpperPipe>, Without<Bird>)>,
+    mut next_playing_state: ResMut<NextState<PlayingState>>,
+) {
+    // TODO - BIRD_WIDTH and BIRD_HEIGHT are not fixed lengths
+    const BIRD_WIDTH: f32 = 34.0;
+    const BIRD_HEIGHT: f32 = 24.0;
+    let (bird_transform, mut bird_velocity) = bird_query.single_mut();
+
+    // NOTE - Solution 1
+    // UpperPipe.y - PIPE_HALF_HEIGHT
+    // BottomPipe.y + PIPE_HALF_HEIGHT
+    //
+    // The x-axis less than the x-axises of a pair pipes
+    // Bird.x < (Upper/Bottom)Pipe.x - PIPE_HALF_WIDTH
+    //
+    // ? But I don't know if the Bird is crossable
+
+    let is_collision = |bird_transform: &Transform, pipe_transform: &Transform| {
+        // Bird
+        let bird_x = bird_transform.translation.x;
+        let bird_y = bird_transform.translation.y;
+        // Pipe
+        let pipe_x = pipe_transform.translation.x;
+        let pipe_y = pipe_transform.translation.y;
+
+        let collision_x = bird_x + BIRD_WIDTH / 2.0 > pipe_x - PIPE_HALF_WIDTH
+            && bird_x - BIRD_WIDTH / 2.0 < pipe_x + PIPE_HALF_WIDTH;
+        let collision_y = bird_y + BIRD_HEIGHT / 2.0 > pipe_y - PIPE_HALF_HEIGHT
+            && bird_y - BIRD_HEIGHT / 2.0 < pipe_y + PIPE_HALF_HEIGHT;
+
+        collision_x && collision_y
+    };
+
+    let mut game_over_workflows = || {
+        next_playing_state.set(PlayingState::GameOver);
+        // TODO - Play the sound
+    };
+
+    for upper_pipe_transform in &upper_pipe_q {
+        if is_collision(bird_transform, upper_pipe_transform) {
+            game_over_workflows();
+        }
+    }
+
+    for bottom_pipe_transform in &bottom_pipe_q {
+        if is_collision(bird_transform, bottom_pipe_transform) {
+            game_over_workflows();
+        }
     }
 }
