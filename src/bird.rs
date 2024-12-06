@@ -2,8 +2,8 @@ use bevy::prelude::*;
 
 use crate::{
     components::{Bird, Velocity},
+    constants::{GROUND_HALF_HEIGHT, WINDOW_HEIGHT},
     states::{GameState, PlayingState},
-    // Game as GameResource,
 };
 
 pub fn plugin(app: &mut App) {
@@ -26,7 +26,14 @@ impl Plugin for BirdPlugin {
         app.add_systems(Update, bird_animation);
         app.add_systems(
             Update,
-            (bird_jumping, bird_gravity).run_if(in_state(PlayingState::Start)),
+            (
+                bird_jumping,
+                bird_gravity,
+                // Change to [`PlayingState::GameOver`] if the Bird hits the Ground
+                // This system will not running if it in [`PlayingState::GameOver`]
+                bird_hits_ground,
+            )
+                .run_if(in_state(PlayingState::Start)),
         );
     }
 }
@@ -151,5 +158,24 @@ fn bird_gravity(mut query: Query<(&mut Transform, &mut Velocity), With<Bird>>, t
 
         velocity.value.y -= delta_velocity;
         transform.translation.y += velocity.value.y * delta;
+    }
+}
+
+fn bird_hits_ground(
+    mut bird_query: Query<(&mut Transform, &mut Velocity), With<Bird>>,
+    mut next_playing_state: ResMut<NextState<PlayingState>>,
+) {
+    const BIRD_HEIGHT: f32 = 24.0;
+    let (mut bird_transform, mut bird_velocity) = bird_query.single_mut();
+
+    let bird_kiss_y = bird_transform.translation.y - BIRD_HEIGHT / 2.0;
+    let ground_kiss_y = -(WINDOW_HEIGHT / 2.0) + GROUND_HALF_HEIGHT / 2.0;
+
+    if bird_kiss_y < ground_kiss_y {
+        bird_velocity.value = Vec3::ZERO;
+        bird_transform.translation.y = ground_kiss_y;
+
+        // Change the state to [`PlayingState::GameOver`]
+        next_playing_state.set(PlayingState::GameOver);
     }
 }
