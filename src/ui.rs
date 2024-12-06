@@ -2,6 +2,8 @@
 //!
 //! Because the HUB is a part of UI management
 
+use std::time::Duration;
+
 use bevy::prelude::*;
 
 use crate::states::PlayingState;
@@ -16,6 +18,8 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(PlayingState::GameOver), spawn_game_over_text);
         app.add_systems(Update, game_over_text_animation.after(spawn_game_over_text));
+
+        app.add_systems(OnEnter(PlayingState::Ready), spawn_count_down_layer);
     }
 }
 
@@ -56,4 +60,33 @@ fn game_over_text_animation(
             }
         }
     }
+}
+
+#[derive(Component)]
+struct CountDownLayer;
+
+// TODO - Do testing
+fn spawn_count_down_layer(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(24, 36), 1, 10, None, None);
+    let layout_handle = texture_atlas_layouts.add(layout);
+
+    commands.spawn((
+        Sprite {
+            image: asset_server.load("texture/numbers.png"),
+            texture_atlas: Some(TextureAtlas {
+                layout: layout_handle.clone(),
+                index: 3, // Counting down from 3 (Not sure)
+            }),
+            ..default()
+        },
+        Transform {
+            translation: Vec3::Z * 1.5,
+            ..default()
+        },
+        CountDownLayer,
+    ));
 }
