@@ -3,7 +3,9 @@ use bevy::prelude::*;
 use crate::{
     components::Score,
     constants::{WINDOW_HEIGHT, WINDOW_WIDTH},
-    states::GameState,
+    events::score,
+    states::{GameState, PlayingState},
+    Game,
 };
 
 pub fn plugin(app: &mut App) {
@@ -15,6 +17,10 @@ struct HudPlugin;
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::InGame), spawn_score_number_text);
+        app.add_systems(
+            Update,
+            update_score_number_text.run_if(in_state(PlayingState::Start)),
+        );
     }
 }
 
@@ -23,8 +29,6 @@ fn spawn_score_number_text(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     asset_server: Res<AssetServer>,
 ) {
-    dbg!("Should spawn score number text");
-    
     let layout = TextureAtlasLayout::from_grid(UVec2::new(24, 36), 1, 10, None, None);
     let layout_handle = texture_atlas_layouts.add(layout);
 
@@ -52,5 +56,41 @@ fn spawn_score_number_text(
             },
             Score::from_index(i),
         ));
+    }
+}
+
+fn update_score_number_text(
+    mut game: ResMut<Game>,
+    mut score_evt: EventReader<score::Add>,
+    mut query: Query<(&mut Sprite, &Score)>,
+) {
+    for add in score_evt.read() {
+        let new_score = game.score + add.step;
+
+        // TODO
+        dbg!(format!("score: {}", new_score));
+        // // Update component
+        // for (mut sprite, score) in query.iter_mut() {
+        //     if let Some(texture_atlas) = &mut sprite.texture_atlas {
+        //         match score {
+        //             Score::Digit => {
+        //                 dbg!("Digit");
+        //                 // texture_atlas.index = new_score % 10;
+        //             }
+        //             Score::Tenth => {
+        //                 dbg!("Tenth");
+        //                 // texture_atlas.index = new_score % 100;
+        //             }
+        //             Score::Hundredth => {
+        //                 dbg!("Hundredth");
+        //                 // texture_atlas.index = new_score % 1000;
+        //             }
+        //             _ => {}
+        //         }
+        //     }
+        // }
+
+        // Update score field in the Game resource
+        game.score = new_score;
     }
 }

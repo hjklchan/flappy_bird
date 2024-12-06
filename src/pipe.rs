@@ -85,7 +85,7 @@ fn spawn_pipe(
                 translation: Vec3::new(x, bottom_y, 0.5),
                 ..default()
             },
-            BottomPipe,
+            BottomPipe::default(),
         ));
     }
 }

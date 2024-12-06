@@ -15,8 +15,10 @@ pub struct Bird;
 #[derive(Component)]
 pub struct UpperPipe;
 
-#[derive(Component)]
-pub struct BottomPipe;
+#[derive(Component, Default)]
+pub struct BottomPipe {
+    pub passed: bool,
+}
 
 #[derive(Component)]
 pub enum Score {
