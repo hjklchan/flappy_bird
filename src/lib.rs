@@ -10,6 +10,7 @@ pub mod hud;
 pub mod bird;
 pub mod ground;
 pub mod pipe;
+pub mod ui;
 
 use bevy::prelude::{Component, Resource};
 
