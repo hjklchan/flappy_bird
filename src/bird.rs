@@ -34,6 +34,8 @@ impl Plugin for BirdPlugin {
             Update,
             (
                 bird_jumping,
+                // TODO - Should be a separate system
+                // when state is GameOver, the bird still has gravity
                 bird_gravity,
                 // Change to [`PlayingState::GameOver`] if the Bird hits the Ground
                 // This system will not running if it in [`PlayingState::GameOver`]
